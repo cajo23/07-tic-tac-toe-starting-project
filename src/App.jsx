@@ -2,24 +2,68 @@ import { useState } from "react";
 import Player from "./components/Player.jsx";
 import GameBoard from "./components/GameBoard.jsx";
 import Log from "./components/Log.jsx";
+import { WINNING_COMBINATIONS } from "./components/winning-combinations.js";
+
+//Spelplan
+const initialGameBoard = 
+[
+    [null, null, null],
+    [null, null, null],
+    [null, null, null]
+];
+
+//Funktion håller reda på vem som är den aktiva spelaren baserat på tidigare turer i spelet.
+function deriveActivePlayer(gameTurns){
+  let currentPlayer = 'X';
+
+      if(gameTurns.length > 0 && gameTurns [0].player === 'X'){
+        currentPlayer = 'O';
+      }
+      return currentPlayer;
+}
 
 function App() {
   const [gameTurns, setGameTurns] = useState([]);
-  const [activePlayer, setActivePlayer] = useState('X'); //Förvalt läge för activePlayer X
+
+  const activePlayer = deriveActivePlayer(gameTurns);
+
+  let gameBoard = initialGameBoard;
+  
+  for(const turn of gameTurns){
+      const {square, player} = turn;
+      const {row, col} = square;
+
+      gameBoard[row] [col] = player;
+  }
+
+  let winner;
+
+  for(const combination of WINNING_COMBINATIONS){
+    const firstSquareSymbol = 
+    gameBoard[combination[0].row][combination[0].column];
+    const secondSquareSymbol = 
+    gameBoard[combination[1].row][combination[1].column];
+    const thirdSquareSymbol = 
+    gameBoard[combination[2].row][combination[2].column];
+
+    if(
+      firstSquareSymbol && firstSquareSymbol === secondSquareSymbol &&
+       firstSquareSymbol === thirdSquareSymbol
+      )
+       {
+        winner = firstSquareSymbol;
+    }
+  }
 
   //Funktion som växlar mellan spelare X och O, när en ruta väljs på GameBoard
   function handleSelectSquare(rowIndex, colIndex){
-    setActivePlayer((curActivePlayer) => curActivePlayer === 'X' ? 'O' : 'X' );
+    
+    //Uppdatera turers tillstånd med lista av uppdaterade turer till gameTurns
     setGameTurns((prevTurns) => {
-      let currentPlayer = 'X';
+      const currentPlayer = deriveActivePlayer(prevTurns);
 
-      //Kontrollerar tidigare turer och om första spelaren är X.
-      //Då ska den växla till O, nästa spelares tur
-      if(prevTurns.length > 0 && prevTurns [0].player === 'X'){
-        currentPlayer = 'O';
-      }
-
-      //Ny lista med turer från prevTurns in i updatedTurns ...prevTurns
+      //Uppdaterar lista med turer, genom att lägga till ny tur baserat på den
+      //aktiva spelaren och den ruta som spelaren valde.
       const updatedTurns = [{ square: {row: rowIndex, col: colIndex}, player: currentPlayer },
          ...prevTurns
         ];
@@ -38,10 +82,8 @@ function App() {
      <Player initialName = "Player 1" symbol= "X" isActive={activePlayer === 'X'}/>
      <Player initialName = "Player 2" symbol= "O" isActive={activePlayer === 'O'}/>
      </ol>
-     <GameBoard 
-     onSelectSquare={handleSelectSquare}
-     turns={gameTurns}
-     />
+     {winner && <p>You won, {winner}!</p>}
+     <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard}/>
     </div>
     <Log turns={gameTurns}/>
 

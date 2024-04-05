@@ -14,7 +14,7 @@ export default function Player ({initialName, symbol, isActive }){
    function handleChange(event){
     setPlayerName(event.target.value);
    }
-
+   
    //Skapar en variabel med spelarens namn
    let editablePlayerName = <span className="player-name">{playerName}</span>;
    
