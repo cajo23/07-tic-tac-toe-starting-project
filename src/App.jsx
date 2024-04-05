@@ -2,6 +2,7 @@ import { useState } from "react";
 import Player from "./components/Player.jsx";
 import GameBoard from "./components/GameBoard.jsx";
 import Log from "./components/Log.jsx";
+import GameOver from "./components/GameOver.jsx";
 import { WINNING_COMBINATIONS } from "./components/winning-combinations.js";
 
 //Spelplan
@@ -9,7 +10,7 @@ const initialGameBoard =
 [
     [null, null, null],
     [null, null, null],
-    [null, null, null]
+    [null, null, null],
 ];
 
 //Funktion håller reda på vem som är den aktiva spelaren baserat på tidigare turer i spelet.
@@ -27,7 +28,7 @@ function App() {
 
   const activePlayer = deriveActivePlayer(gameTurns);
 
-  let gameBoard = initialGameBoard;
+  let gameBoard =[...initialGameBoard.map(array => [...array])];
   
   for(const turn of gameTurns){
       const {square, player} = turn;
@@ -55,6 +56,8 @@ function App() {
     }
   }
 
+  const hasDraw = gameTurns.length === 9 && !winner;
+
   //Funktion som växlar mellan spelare X och O, när en ruta väljs på GameBoard
   function handleSelectSquare(rowIndex, colIndex){
     
@@ -64,13 +67,18 @@ function App() {
 
       //Uppdaterar lista med turer, genom att lägga till ny tur baserat på den
       //aktiva spelaren och den ruta som spelaren valde.
-      const updatedTurns = [{ square: {row: rowIndex, col: colIndex}, player: currentPlayer },
-         ...prevTurns
+      const updatedTurns = [
+        { square: {row: rowIndex, col: colIndex}, player: currentPlayer },
+         ...prevTurns,
         ];
 
         //uppdaterad lista returneras och blir det nya tillståndet
         return updatedTurns;
     });
+  }
+
+  function handleRestart(){
+    setGameTurns([]);
   }
 
   return (
@@ -82,7 +90,9 @@ function App() {
      <Player initialName = "Player 1" symbol= "X" isActive={activePlayer === 'X'}/>
      <Player initialName = "Player 2" symbol= "O" isActive={activePlayer === 'O'}/>
      </ol>
-     {winner && <p>You won, {winner}!</p>}
+     {(winner || hasDraw) && (
+     <GameOver winner={winner} onRestart={handleRestart}/>
+     )}
      <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard}/>
     </div>
     <Log turns={gameTurns}/>
