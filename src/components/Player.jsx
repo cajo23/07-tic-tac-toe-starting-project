@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Player ({initialName, symbol, isActive }){
+export default function Player ({initialName, symbol, isActive, onChangeName}){
    const [playerName, setPlayerName] = useState(initialName);
 
     //isEditing är initialt false som standard
@@ -9,6 +9,11 @@ export default function Player ({initialName, symbol, isActive }){
    //Funktion för att växla edit mellan true och false beroende på om användare är i redigerarläge eller ej  
    function handleEditClick(){
     setIsEditing((editing) => !editing);
+
+    if(isEditing){
+      onChangeName(symbol, playerName);
+    }
+    
    }
 
    function handleChange(event){
